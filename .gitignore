@@ -1,2 +1,4 @@
 CMakeLists.txt
-.idea/
+.idea/tasks.xml
+.idea/workspace.xml
+.idea/vcs.xml
