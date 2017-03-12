@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -DNDEBUG -g -std=c++11
+CFLAGS = -Wall -DNDEBUG -g -std=c++11
 
 default:
-	$(CC) simpletest.cpp osm.cpp osm.h -o ex1 $(CFLAGS)
+	$(CC) -O0 simpletest.cpp osm.cpp osm.h -o ex1 $(CFLAGS)

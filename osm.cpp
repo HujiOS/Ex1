@@ -14,6 +14,8 @@
 
 using namespace std;
 timeMeasurmentStructure *myTime;
+
+int dummyInt;
 /* Initialization function that the user must call
  * before running any other library function.
  * The function may, for example, allocate memory or
@@ -38,13 +40,13 @@ int osm_init(){
  * Returns 0 uppon success and -1 on failure
  */
 int osm_finalizer(){
-    delete myTime->machineName;
+    delete myTime -> machineName;
     delete myTime;
     return 0;
 }
 
 void dummyFoo(){
-    1+1;
+    dummyInt = 1 + 1;
 }
 void emptyFoo(){}
 
@@ -67,7 +69,7 @@ void fileLoad(){
 }
 
 unsigned int validateIterations(unsigned int iter){
-    iter = iter != 0? iter : 1000;
+    iter = iter != 0 ? iter : 1000;
     iter += iter % 10; // we are running 5 calls for each iteration so we want
     // that iterations % 5 = 0
     return iter;
@@ -144,13 +146,19 @@ timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
                                       unsigned int syscall_iterations,
                                       unsigned int disk_iterations){
 
-    gethostname(myTime->machineName,sizeof(char)*256);
-    myTime->instructionTimeNanoSecond = osm_operation_time(operation_iterations);
-    myTime->functionTimeNanoSecond = osm_function_time(function_iterations);
-    myTime->trapTimeNanoSecond = osm_syscall_time(syscall_iterations);
-    myTime->diskTimeNanoSecond = osm_disk_time(disk_iterations);
-    myTime->functionInstructionRatio = myTime->functionTimeNanoSecond /
+    gethostname(myTime -> machineName,sizeof(char)*256);
+
+    myTime -> instructionTimeNanoSecond = osm_operation_time(operation_iterations);
+
+    myTime -> functionTimeNanoSecond = osm_function_time(function_iterations);
+
+    myTime -> trapTimeNanoSecond = osm_syscall_time(syscall_iterations);
+    cout << "what what in the butt3" << endl;
+    myTime -> diskTimeNanoSecond = osm_disk_time(disk_iterations);
+
+    myTime -> functionInstructionRatio = myTime->functionTimeNanoSecond /
             myTime->instructionTimeNanoSecond;
+
     myTime->trapInstructionRatio = myTime->trapTimeNanoSecond / myTime->instructionTimeNanoSecond;
     myTime->diskInstructionRatio = myTime->diskTimeNanoSecond / myTime->instructionTimeNanoSecond;
     return *myTime;

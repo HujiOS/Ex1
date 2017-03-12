@@ -1,0 +1,49 @@
+login1, bgalb
+Student Name1 (ID1), Gal Katzhendler(203165238)
+EX: 1
+
+FILES:
+myfile.c -- a file with some code
+myfile.h -- a file with some headers
+
+REMARKS:
+These are some remarks that
+I want the graders to know
+about this submission.
+
+ANSWERS:
+
+Task1:
+
+In case the program gets a parameter, it creates 2 directories:
+Welcome, Welcome/To. And the file Welcome/To/OS2016, with the first two directories get full permissions for owner and group 
+and "others" get permission only to execute and read the folders.
+The file is opened for writing only and truncated if it exists, otherwise it is created(the file only has read-write permissions)
+Then, the program writes an amount of spaces to the file, closes the file, deletes it, and removes the two directories it has created.
+
+In case the program does not get a parameter, it exits writing an error(to a duplicate of stderr) that it should have gotten a parameter.
+
+How we concluded this:
+First we ran the WhatIDo program without any parameters, and saw it writes an error to a duplicate of stderr:
+dup(2) duplicates file descriptor #2 which is the stderr. it returns 3 which is the fd the program refers to from now on
+then the program gets the stderr stats(irrelevant for us)
+and writes to the stderr an error message of size 62 bytes. The system successfully writes these 62 bytes(return value)
+
+Then, we understood the file has to get a parameter, and so we ran it with a parameter:
+We saw the program creates two directories with the permissions and names stated above,
+with the system call "mkdir" which got the directory name to create and the permissions for it
+Then we saw the system opens a new file with the name stated above, with write only flag + create if nonexistent flag + truncate if exists flag
+The system returns that the file it has created has the fd #3
+The system checks some info about the file(that is irrelevant for what it does)
+Then the system uses write, to fd 3(which is our file), a series of spaces of a size of 183 bytes. The system returns 183, which means it has written the 183 bytes.
+Then the system closes the file fd 3(which is the file it created)[using the close()] command. It does so successfully(0 exit code)
+Deletes the file it has created(3) using unlink - which deletes a link to a file, and if no more links are available to the file, it deletes it.
+(The delete is successfull as the exit code is 0)
+Then it removes the two directories it has created with rmdir which removes directories, also successfully, with exit code 0.
+Then it exists all threads in the process using exit group with status 0.
+
+
+
+Q2:
+Here are answers to theoreical questions 
+if there were such questions in the exercise.
