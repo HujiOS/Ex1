@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include "osm.h"
 
 using namespace std;
@@ -76,10 +77,11 @@ unsigned int validateIterations(unsigned int iter){
 }
 
 double timeIt(void (*foo)(), unsigned int iter){
-    timeval sTime, eTime;
-    unsigned long totalTime = 0;
+    timeval sTime, eTime, diff;
+    if(gettimeofday(&sTime,NULL) == -1){
+        return -1;
+    };
     for(unsigned int i=0;i<iter/10;++i){
-        gettimeofday(&sTime,NULL);
         foo();
         foo();
         foo();
@@ -90,10 +92,14 @@ double timeIt(void (*foo)(), unsigned int iter){
         foo();
         foo();
         foo();
-        gettimeofday(&eTime,NULL);
-        totalTime += eTime.tv_usec - sTime.tv_usec;
+
     }
-    return (totalTime / (iter / 10))*1000; // convert from micro to nano
+    if(gettimeofday(&eTime,NULL) == -1){
+        return -1;
+    }
+    timersub(&eTime,&sTime,&diff);
+    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iter; // convert from
+    // micro to nano
 }
 
 /* Time measurement function for a simple arithmetic operation.
