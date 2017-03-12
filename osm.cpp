@@ -108,7 +108,28 @@ double timeIt(void (*foo)(), unsigned int iter){
    */
 double osm_operation_time(unsigned int iterations){
     iterations = validateIterations(iterations);
-    return timeIt(dummyFoo, iterations);
+    timeval sTime, eTime, diff;
+    if(gettimeofday(&sTime,NULL) == -1){
+        return -1;
+    };
+    for(unsigned int i=0;i<iterations/10;++i){
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+        dummyInt = 1 + 1;
+    }
+    if(gettimeofday(&eTime,NULL) == -1){
+        return -1;
+    }
+    timersub(&eTime,&sTime,&diff);
+    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iterations; // convert from
+    // micro to nano
 }
 
 
