@@ -155,17 +155,17 @@ double osm_syscall_time(unsigned int iterations){
    and -1 upon failure.
    */
 double osm_disk_time(unsigned int iterations){
-
     iterations = validateIterations(iterations);
-    timeval sTime, eTime;
-    unsigned long totalTime = 0;
+    timeval sTime, eTime, diff;
+
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
     int f;
-    f = open("stamText.txt", O_SYNC | O_DIRECT);
+    f = open("/tmp/stamText.txt", O_SYNC | O_DIRECT);
+    if(gettimeofday(&sTime,NULL) == -1){
+        return -1;
+    };
     for(unsigned int i=0;i<iterations/5;++i){
-        totalTime += eTime.tv_usec - sTime.tv_usec;
-        gettimeofday(&sTime,NULL);
         pread(f, buff, block_size, 0);
         pread(f, buff, block_size, 0);
         pread(f, buff, block_size, 0);
@@ -173,9 +173,17 @@ double osm_disk_time(unsigned int iterations){
         pread(f, buff, block_size, 0);
         gettimeofday(&eTime,NULL);
     }
+
+    if(gettimeofday(&eTime,NULL) == -1){
+        return -1;
+    }
+
+    timersub(&eTime,&sTime,&diff);
+
     close(f);
     free(buff);
-    return (totalTime / (iterations / 5))*1000; // convert from micro to nano
+
+    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iterations;
 }
 
 timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
