@@ -5,6 +5,9 @@
 
 
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
@@ -12,6 +15,9 @@
 #include <fstream>
 #include <cmath>
 #include "osm.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 timeMeasurmentStructure *myTime;
@@ -55,19 +61,6 @@ void trap(){
     OSM_NULLSYSCALL;
 }
 
-void fileLoad(){
-    FILE *f;
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-}
 
 unsigned int validateIterations(unsigned int iter){
     iter = iter != 0 ? iter : 1000;
@@ -132,6 +125,12 @@ double osm_operation_time(unsigned int iterations){
     // micro to nano
 }
 
+size_t get_block_size()
+{
+    struct stat fi;
+    stat("/tmp", &fi);
+    return fi.st_blksize;
+}
 
 /* Time measurement function for an empty function call.
    returns time in nano-seconds upon success,
@@ -156,15 +155,26 @@ double osm_syscall_time(unsigned int iterations){
    and -1 upon failure.
    */
 double osm_disk_time(unsigned int iterations){
+
     iterations = validateIterations(iterations);
     timeval sTime, eTime;
     unsigned long totalTime = 0;
+    size_t block_size = get_block_size();
+    char * buff = (char*)malloc( sizeof(char)*block_size);//block_size,(fst param)
+    int f;
+    f = open("stamText.txt", O_SYNC | O_DIRECT);
     for(unsigned int i=0;i<iterations/5;++i){
         totalTime += eTime.tv_usec - sTime.tv_usec;
         gettimeofday(&sTime,NULL);
-        fileLoad();
+        pread(f, buff, block_size, 0);
+        pread(f, buff, block_size, 0);
+        pread(f, buff, block_size, 0);
+        pread(f, buff, block_size, 0);
+        pread(f, buff, block_size, 0);
         gettimeofday(&eTime,NULL);
     }
+    close(f);
+    free(buff);
     return (totalTime / (iterations / 5))*1000; // convert from micro to nano
 }
 
@@ -186,7 +196,7 @@ timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
     myTime -> functionInstructionRatio = myTime->functionTimeNanoSecond /
             myTime->instructionTimeNanoSecond;
 
-    myTime->trapInstructionRatio = myTime->trapTimeNanoSecond / myTime->instructionTimeNanoSecond;
-    myTime->diskInstructionRatio = myTime->diskTimeNanoSecond / myTime->instructionTimeNanoSecond;
+    myTime -> trapInstructionRatio = myTime->trapTimeNanoSecond / myTime->instructionTimeNanoSecond;
+    myTime -> diskInstructionRatio = myTime->diskTimeNanoSecond / myTime->instructionTimeNanoSecond;
     return *myTime;
 }
