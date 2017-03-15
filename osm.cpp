@@ -160,7 +160,7 @@ double osm_disk_time(unsigned int iterations){
     timeval sTime, eTime;
     unsigned long totalTime = 0;
     size_t block_size = get_block_size();
-    char * buff = (char*)malloc( sizeof(char)*block_size);//block_size,(fst param)
+    char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
     int f;
     f = open("stamText.txt", O_SYNC | O_DIRECT);
     for(unsigned int i=0;i<iterations/5;++i){
