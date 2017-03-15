@@ -164,6 +164,8 @@ double osm_disk_time(unsigned int iterations){
     f = open("/tmp/stamText.txt", O_SYNC | O_DIRECT);
     if(gettimeofday(&sTime,NULL) == -1){
         return -1;
+
+
     };
     for(unsigned int i=0;i<iterations/5;++i){
         pread(f, buff, block_size, 0);
