@@ -4,7 +4,7 @@ RANLIB=ranlib
 LIBSRC=osm.cpp
 LIBOBJ=$(LIBSRC:.cpp=.o)
 
-INCS=-I.
+INCS= -I. -std=c++11
 CFLAGS = -Wall -g $(INCS)
 LOADLIBES = -L./
 
@@ -16,17 +16,21 @@ TARFLAGS=-cvf
 TARNAME=ex1.tar
 TARSRCS=$(LIBSRC) Makefile README
 
+
 all: $(TARGETS)
 
+osm.o:
+	$(CC) -c osm.cpp $(CFLAGS)
+
 $(TARGETS): $(LIBOBJ)
-$(AR) $(ARFLAGS) $@ $^
-$(RANLIB) $@
+	$(AR) $(ARFLAGS) $@ $^
+	$(RANLIB) $@
 
 clean:
-$(RM) $(TARGETS) $(OSMLIB) $(OBJ) $(LIBOBJ) *~ *core
+	$(RM) $(TARGETS) $(OSMLIB) $(OBJ) $(LIBOBJ) *~ *core
 
 depend:
-makedepend -- $(CFLAGS) -- $(SRC) $(LIBSRC)
+	makedepend -- $(CFLAGS) -- $(SRC) $(LIBSRC)
 
 tar:
-$(TAR) $(TARFLAGS) $(TARNAME) $(TARSRCS)
+	$(TAR) $(TARFLAGS) $(TARNAME) $(TARSRCS)
