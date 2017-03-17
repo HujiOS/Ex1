@@ -165,12 +165,13 @@ double osm_disk_time(unsigned int iterations){
     int readBytes = 0;
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
-    f = open("WhatIDo", O_SYNC | O_DIRECT);
+    f = open("WhatIDo", O_SYNC | O_DIRECT | O_CREAT | O_RDONLY | O_TRUNC, S_IRWXG | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if(f<0){
-        // cant open file \ cant read from file
-        cout<<"error while open the file."<<endl;
-        return -1;
+            cout<<"error while open the file. errno: "<<f<<endl;
+            return -1;
+            // cant open file \ cant read from file
     }
+
     for(unsigned int i=0;i<iterations;++i){
         if(gettimeofday(&sTime,NULL) == -1){
             return -1;
