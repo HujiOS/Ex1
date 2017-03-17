@@ -52,9 +52,6 @@ int osm_finalizer(){
     return 0;
 }
 
-void dummyFoo(){
-    dummyInt = 1 + 1;
-}
 void emptyFoo(){}
 
 void trap(){
@@ -72,9 +69,6 @@ unsigned int validateIterations(unsigned int iter){
 double timeIt(void (*foo)(), unsigned int iter){
     timeval sTime, eTime, diff;
     double total = 0;
-    if(gettimeofday(&sTime,NULL) == -1){
-        return -1;
-    };
     for(unsigned int i=0;i<iter/10;++i){
         if(gettimeofday(&sTime,NULL) == -1){
             return -1;
@@ -166,11 +160,11 @@ double osm_syscall_time(unsigned int iterations){
 double osm_disk_time(unsigned int iterations){
     iterations = validateIterations(iterations);
     timeval sTime, eTime, diff;
+    int f;
     double ttl = 0;
     int readBytes = 0;
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
-    int f;
     f = open("WhatIDo", O_SYNC | O_DIRECT);
     if(f<0){
         // cant open file \ cant read from file
