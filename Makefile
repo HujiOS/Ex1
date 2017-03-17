@@ -1,15 +1,32 @@
-CC = g++
-CFLAGS = -Wall -DNDEBUG -g -std=c++11
+CC=g++
+RANLIB=ranlib
 
-default: libosm.a
-	$(CC) -O0 -o ex1 simpletest.cpp -L. -losm
+LIBSRC=osm.cpp
+LIBOBJ=$(LIBSRC:.cpp=.o)
 
-libosm.a: osm.o
-	ar -rv libosm.a osm.o
+INCS=-I.
+CFLAGS = -Wall -g $(INCS)
+LOADLIBES = -L./
 
-osm.o: osm.cpp osm.h
-	$(CC) -c osm.cpp osm.h $(CFLAGS)
+OSMLIB = libosm.a
+TARGETS = $(OSMLIB)
 
+TAR=tar
+TARFLAGS=-cvf
+TARNAME=ex1.tar
+TARSRCS=$(LIBSRC) Makefile README
+
+all: $(TARGETS)
+
+$(TARGETS): $(LIBOBJ)
+$(AR) $(ARFLAGS) $@ $^
+$(RANLIB) $@
 
 clean:
-	-rm -f *.o *.a *.gch
+$(RM) $(TARGETS) $(OSMLIB) $(OBJ) $(LIBOBJ) *~ *core
+
+depend:
+makedepend -- $(CFLAGS) -- $(SRC) $(LIBSRC)
+
+tar:
+$(TAR) $(TARFLAGS) $(TARNAME) $(TARSRCS)
