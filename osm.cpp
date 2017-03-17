@@ -14,15 +14,13 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <sys/fcntl.h>
-#include "osm.h"
 #include <fcntl.h>
+#include "osm.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 using namespace std;
 timeMeasurmentStructure *myTime;
-const char * filepath = "stamText.txt";
 
 int dummyInt;
 /* Initialization function that the user must call
@@ -98,7 +96,7 @@ double timeIt(void (*foo)(), unsigned int iter){
         // im saving the results as nano..
         total += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)));
     }
-    return total / (iter / 10);
+    return total / iter;
 }
 
 /* Time measurement function for a simple arithmetic operation.
@@ -108,10 +106,12 @@ double timeIt(void (*foo)(), unsigned int iter){
 double osm_operation_time(unsigned int iterations){
     iterations = validateIterations(iterations);
     timeval sTime, eTime, diff;
-    if(gettimeofday(&sTime,NULL) == -1){
-        return -1;
-    };
+    double ttl = 0;
+
     for(unsigned int i=0;i<iterations/10;++i){
+        if(gettimeofday(&sTime,NULL) == -1){
+            return -1;
+        };
         dummyInt = 1 + 1;
         dummyInt = 1 + 1;
         dummyInt = 1 + 1;
@@ -122,12 +122,15 @@ double osm_operation_time(unsigned int iterations){
         dummyInt = 1 + 1;
         dummyInt = 1 + 1;
         dummyInt = 1 + 1;
+        if(gettimeofday(&eTime,NULL) == -1){
+            return -1;
+        }
+        timersub(&eTime,&sTime,&diff);
+        ttl += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)))
     }
-    if(gettimeofday(&eTime,NULL) == -1){
-        return -1;
-    }
-    timersub(&eTime,&sTime,&diff);
-    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iterations; // convert from
+
+
+    return ttl / iterations; // convert from
     // micro to nano
 }
 
@@ -163,35 +166,30 @@ double osm_syscall_time(unsigned int iterations){
 double osm_disk_time(unsigned int iterations){
     iterations = validateIterations(iterations);
     timeval sTime, eTime, diff;
-
+    double ttl = 0;
+    int readBytes = 0;
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
     int f;
     f = open("/tmp/stamText.txt", O_SYNC | O_DIRECT);
-    if(gettimeofday(&sTime,NULL) == -1){
-        return -1;
-
-
-    };
-    for(unsigned int i=0;i<iterations/5;++i){
-        pread(f, buff, block_size, 0);
-        pread(f, buff, block_size, 0);
-        pread(f, buff, block_size, 0);
-        pread(f, buff, block_size, 0);
-        pread(f, buff, block_size, 0);
-        gettimeofday(&eTime,NULL);
-    }
-
-    if(gettimeofday(&eTime,NULL) == -1){
+    if(f<0 || pread(f, buff, block_size, 0) != block_size){
+        // cant open file \ cant read from file
         return -1;
     }
-
-    timersub(&eTime,&sTime,&diff);
-
+    for(unsigned int i=0;i<iterations;++i){
+        if(gettimeofday(&sTime,NULL) == -1){
+            return -1;
+        };
+        readBytes = pread(f, buff, block_size, 0);
+        if(gettimeofday(&eTime,NULL) == -1 || readBytes < 0){
+            return -1;
+        }
+        timersub(&eTime,&sTime,&diff);
+        ttl += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)));
+    }
     close(f);
     free(buff);
-
-    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iterations;
+    return ttl / iterations;
 }
 
 timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
