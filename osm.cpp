@@ -11,10 +11,14 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <sys/fcntl.h>
 #include "osm.h"
+
+#define A 1+1
 
 using namespace std;
 timeMeasurmentStructure *myTime;
+const char * filepath = "stamText.txt";
 
 int dummyInt;
 /* Initialization function that the user must call
@@ -55,20 +59,6 @@ void trap(){
     OSM_NULLSYSCALL;
 }
 
-void fileLoad(){
-    FILE *f;
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-    f = fopen("stamText.txt","r");
-    fclose(f);
-}
-
 unsigned int validateIterations(unsigned int iter){
     iter = iter != 0 ? iter : 1000;
     iter += iter % 10; // we are running 5 calls for each iteration so we want
@@ -78,10 +68,14 @@ unsigned int validateIterations(unsigned int iter){
 
 double timeIt(void (*foo)(), unsigned int iter){
     timeval sTime, eTime, diff;
+    double total = 0;
     if(gettimeofday(&sTime,NULL) == -1){
         return -1;
     };
     for(unsigned int i=0;i<iter/10;++i){
+        if(gettimeofday(&sTime,NULL) == -1){
+            return -1;
+        };
         foo();
         foo();
         foo();
@@ -92,14 +86,14 @@ double timeIt(void (*foo)(), unsigned int iter){
         foo();
         foo();
         foo();
-
+        if(gettimeofday(&eTime,NULL) == -1){
+            return -1;
+        }
+        timersub(&eTime,&sTime,&diff);
+        // im saving the results as nano..
+        total += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)));
     }
-    if(gettimeofday(&eTime,NULL) == -1){
-        return -1;
-    }
-    timersub(&eTime,&sTime,&diff);
-    return (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3))) / iter; // convert from
-    // micro to nano
+    return total / (iter / 10);
 }
 
 /* Time measurement function for a simple arithmetic operation.
@@ -136,15 +130,41 @@ double osm_syscall_time(unsigned int iterations){
    */
 double osm_disk_time(unsigned int iterations){
     iterations = validateIterations(iterations);
-    timeval sTime, eTime;
-    unsigned long totalTime = 0;
-    for(unsigned int i=0;i<iterations/5;++i){
-        totalTime += eTime.tv_usec - sTime.tv_usec;
-        gettimeofday(&sTime,NULL);
-        fileLoad();
-        gettimeofday(&eTime,NULL);
+    timeval sTime, eTime, diff;
+    int alignment;
+    double total = 0;
+    alignment = open(filepath,O_DIRECT | O_SYNC);
+    if(alignment < 0)
+    {
+        return -1;
     }
-    return (totalTime / (iterations / 5))*1000; // convert from micro to nano
+    for(unsigned int i=0;i<iterations/5;++i){
+        if(gettimeofday(&sTime,NULL) == -1){
+            return -1;
+        };
+        if(write(alignment, "HelloWorld\n",sizeof("HelloWorld\n")/sizeof(char))
+           != sizeof("HelloWorld\n")/sizeof(char))
+            return -1;
+        if(write(alignment, "HelloWorld\n",sizeof("HelloWorld\n")/sizeof(char))
+           != sizeof("HelloWorld\n")/sizeof(char))
+            return -1;
+        if(write(alignment, "HelloWorld\n",sizeof("HelloWorld\n")/sizeof(char))
+           != sizeof("HelloWorld\n")/sizeof(char))
+            return -1;
+        if(write(alignment, "HelloWorld\n",sizeof("HelloWorld\n")/sizeof(char))
+           != sizeof("HelloWorld\n")/sizeof(char))
+            return -1;
+        if(write(alignment, "HelloWorld\n",sizeof("HelloWorld\n")/sizeof(char))
+           != sizeof("HelloWorld\n")/sizeof(char))
+            return -1;
+        if(gettimeofday(&eTime,NULL) == -1){
+            return -1;
+        }
+        timersub(&eTime,&sTime,&diff);
+        // im saving the results as nano..
+        total += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)));
+    }
+    return (total / (iterations / 5)); // convert from micro to nano
 }
 
 timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
@@ -161,11 +181,16 @@ timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
     myTime -> trapTimeNanoSecond = osm_syscall_time(syscall_iterations);
     cout << "what what in the butt3" << endl;
     myTime -> diskTimeNanoSecond = osm_disk_time(disk_iterations);
-
+    if(myTime->instructionTimeNanoSecond == 0){ // we don`t want to divide by zero.
+        myTime -> functionInstructionRatio = myTime->functionTimeNanoSecond / -1;
+        myTime->trapInstructionRatio = myTime->trapTimeNanoSecond / -1;
+        myTime->diskInstructionRatio = myTime->diskTimeNanoSecond / -1;
+        return *myTime;
+    }
     myTime -> functionInstructionRatio = myTime->functionTimeNanoSecond /
-            myTime->instructionTimeNanoSecond;
-
+                                         myTime->instructionTimeNanoSecond;
     myTime->trapInstructionRatio = myTime->trapTimeNanoSecond / myTime->instructionTimeNanoSecond;
     myTime->diskInstructionRatio = myTime->diskTimeNanoSecond / myTime->instructionTimeNanoSecond;
+
     return *myTime;
 }

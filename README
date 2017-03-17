@@ -1,5 +1,7 @@
 login1, bgalb
 Student Name1 (ID1), Gal Katzhendler(203165238)
+login2, omer
+Student Name2 (ID1), Omer Shacham(204034722)
 EX: 1
 
 FILES:
@@ -45,5 +47,18 @@ Then it exists all threads in the process using exit group with status 0.
 
 
 Q2:
-Here are answers to theoreical questions 
-if there were such questions in the exercise.
+We made this code design according to known "code recycling" templates that we dont want to
+write some method more than once if it is not necessary. so we create "TimeIt" function that
+getting a custom function and run it for the relevant number of iterations.
+we are checking the iterations of each "Round" (10 iters) and summing it up.
+
+For the disk access I decided not to go so far So I made a new function that time the whole
+process by itself (not using "TimeIt function) because there`s alot of custom things that we tried
+to do, i.e we didnt want to count the file open (only the writes) and etc.
+
+we are allocating memory for the whole struct in the init function (the hostname need a malloc)
+I thought about "allocating" the file number alignment in the beginning but I saw that is not needed
+because we are iterating only once.
+
+for the end for every time collapse we are checking if something goes wrong and returns -1
+
