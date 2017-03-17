@@ -126,7 +126,7 @@ double osm_operation_time(unsigned int iterations){
             return -1;
         }
         timersub(&eTime,&sTime,&diff);
-        ttl += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)))
+        ttl += (double) ((diff.tv_sec * pow(10,9)) + (diff.tv_usec * pow(10,3)));
     }
 
 
@@ -171,9 +171,10 @@ double osm_disk_time(unsigned int iterations){
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
     int f;
-    f = open("/tmp/stamText.txt", O_SYNC | O_DIRECT);
-    if(f<0 || pread(f, buff, block_size, 0) != block_size){
+    f = open("WhatIDo", O_SYNC | O_DIRECT);
+    if(f<0){
         // cant open file \ cant read from file
+        cout<<"error while open the file."<<endl;
         return -1;
     }
     for(unsigned int i=0;i<iterations;++i){
@@ -182,6 +183,7 @@ double osm_disk_time(unsigned int iterations){
         };
         readBytes = pread(f, buff, block_size, 0);
         if(gettimeofday(&eTime,NULL) == -1 || readBytes < 0){
+            cout<<"error while reading from file"<<endl;
             return -1;
         }
         timersub(&eTime,&sTime,&diff);
@@ -204,7 +206,6 @@ timeMeasurmentStructure measureTimes (unsigned int operation_iterations,
     myTime -> functionTimeNanoSecond = osm_function_time(function_iterations);
 
     myTime -> trapTimeNanoSecond = osm_syscall_time(syscall_iterations);
-    cout << "what what in the butt3" << endl;
     myTime -> diskTimeNanoSecond = osm_disk_time(disk_iterations);
     if(myTime->instructionTimeNanoSecond == 0){ // we don`t want to divide by zero.
         myTime -> functionInstructionRatio = myTime->functionTimeNanoSecond / -1;
