@@ -7,7 +7,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
@@ -35,6 +34,13 @@ int osm_init(){
     myTime->machineName = new char[256];
     if(myTime == nullptr || myTime->machineName == nullptr){
         return -1;
+    }
+    if (FILE *file = fopen("tmp/WhatIDo", "r")) {
+        fclose(file);
+    } else {
+        std::ofstream outfile ("tmp/WhatIDo");
+        outfile << "asdfasdfasdfasdfasdf" << std::endl;
+        outfile.close();
     }
     return 0;
 }
@@ -165,7 +171,7 @@ double osm_disk_time(unsigned int iterations){
     int readBytes = 0;
     size_t block_size = get_block_size();
     char * buff = (char*)aligned_alloc(block_size, sizeof(char)*block_size);//block_size,(fst param)
-    f = open("WhatIDo", O_SYNC | O_DIRECT | O_CREAT, S_IRWXG | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    f = open("tmp/WhatIDo", O_SYNC | O_DIRECT | O_CREAT, S_IRWXG | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if(f<0){
             cout<<"error while open the file. errno: "<<f<<endl;
             return -1;

@@ -5,8 +5,10 @@ Student Name2 (ID1), Omer Shacham(204034722)
 EX: 1
 
 FILES:
-myfile.c -- a file with some code
-myfile.h -- a file with some headers
+README - this file
+Makefile - a file that helps to compile all of this
+osm.cpp - our implementation of operations/calls/disk acceess timings
+
 
 REMARKS:
 These are some remarks that
